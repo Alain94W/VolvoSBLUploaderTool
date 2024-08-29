@@ -17,7 +17,7 @@ This git will not describe where to find parts or how to setup it as they are to
 
 # Secondary Boot Loader
 
-The secondary boot loader are designed to be use on mcirocontroller : 9S12 and 9S12X.
+The secondary boot loader are designed to be use on mcirocontroller : 9S12 and 9S12X. They are coded in C using a very old verion of CodeWarrior.
 They are different version precompilled ready to be used for different configurations : using CAN0 or CAN4 channel, starting code in RAM at address 1400 or 3000.
 For this reason the following convention in naming was used : SBL_XXXXX_YYYY_ZZZZZ.hex where:
 * XXXXX = is the MCU Family 9S12 or 9S12X
