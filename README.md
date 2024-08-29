@@ -126,5 +126,7 @@ In any case, if you have a fail to write data or you quit the uploader tool, you
 
 PS : I'm looking for a dump of CEM that has TPMS activated and working, If you have this and would like to share it with me you will be awesome.
 
+Note that the C code can be optimized a lot and a great code cleanup is still to do but it is working for now.
+
 # Dice
 I'm not a Windows user so I don't have a version of this tool using windows and it is not working with Dice. If you made your own software based on it and using Dice, I would be happy to use it too !
