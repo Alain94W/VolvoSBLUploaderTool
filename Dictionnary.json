@@ -1,0 +1,8 @@
+{"count":6, "profiles":[
+{"ecu_name":"CEM_HS_CAN","ecu_id":"0x50", "startAddr":"0x1400", "ecu_hw":"000031327215", "osc_speed":8000, "sbl_filename":"SBL_HC12S9X_CAN4_1400.hex", "useChecksumFrame":1},
+{"ecu_name":"CEM_LS_CAN","ecu_id":"0x40", "startAddr":"1400", "ecu_hw":"000031327215", "osc_speed":4000, "sbl_filename":"SBL_HC12S9X_CAN0_1400.hex", "useChecksumFrame":0},
+{"ecu_name":"CEM_HS_CAN","ecu_id":"0x50", "startAddr":"0x1400", "ecu_hw":"000030765015", "osc_speed":8000, "sbl_filename":"SBL_HC12S_CAN4_1400.hex", "useChecksumFrame":0},
+{"ecu_name":"CEM_LS_CAN","ecu_id":"0x40", "startAddr":"1400", "ecu_hw":"000030765015", "osc_speed":4000, "sbl_filename":"SBL_HC12S_CAN0_1400.hex", "useChecksumFrame":0},
+{"ecu_name":"DIM_LS_CAN","ecu_id":"0x51", "startAddr":"3000", "ecu_hw":"000030669187", "osc_speed":4000, "sbl_filename":"SBL_HC12S_CAN0_3000.hex", "useChecksumFrame":0},
+{"ecu_name":"DIM_LS_CAN","ecu_id":"51", "startAddr":"3000", "ecu_hw":"000031296237", "osc_speed":4000, "sbl_filename":"SBL_HC12S_CAN0_3000.hex", "useChecksumFrame":0}
+]}
