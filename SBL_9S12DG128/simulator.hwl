@@ -1,0 +1,27 @@
+OPEN source 0 0 50 25
+Source < attributes TOOLTIP on,TOOLTIP_FORMAT signed,TOOLTIP_MODE details,FREEZE off,MARKS off
+OPEN assembly 50 0 50 25
+Assembly < attributes ADR off,CODE off,ABSADR on,SYMB off,FORMAT Auto,FREEZE off,TOPPC 0xC000
+OPEN procedure 0 25 50 25
+Procedure < attributes VALUES on,TYPES off
+OPEN register 50 25 50 25
+Register < attributes FORMAT AUTO,COMPLEMENT None
+OPEN memory 50 50 50 25
+Memory < attributes FORMAT hex,COMPLEMENT None,WORD 1,ASC on,ADR on,MODE automatic,UPDATERATE 10,ADDRESS 0x0
+OPEN data 0 50 50 25
+Data:1 < attributes SCOPE global,COMPLEMENT None,FORMAT Symb,MODE automatic,SORT NotSort,UPDATERATE 10,NAMEWIDTH 16
+OPEN data 0 75 50 25
+Data:2 < attributes SCOPE local,COMPLEMENT None,FORMAT Symb,MODE automatic,SORT NotSort,UPDATERATE 10,NAMEWIDTH 16
+OPEN terminal 50 75 50 25
+Terminal < attributes CACHESIZE 1000
+Terminal < attributes SCI_DEFAULT_TEXT "Virtual SCI",SCI_CONNECTION 0,1,SCI_CONNECTION 1,0,SCI_CONNECTION 1,3,SCI_CONNECTION 3,1,SCI_PORT COM1,SCI_BAUD  9600,SCI_SHOW_PROTOCOL OFF,SCI_VIRTUAL_IN "Sci0.SerialOutput",SCI_VIRTUAL_OUT "Sci0.SerialInput",SCI_FILENAME_IN "",SCI_FILENAME_OUT ""
+OPEN visualizationtool 69 1 22 72
+VisualizationTool< Attributes [stEditM="0",swGridMode="3",swRefresh="2",refTime="1"]
+VisualizationTool< LoadInstrument PushSwitch[BoundX="80",BoundY="220",Port_PortKind="2",Port="redButtonDown"]
+VisualizationTool< LoadInstrument PushSwitch[BoundX="80",BoundY="260",Port_PortKind="2",Port="blueButtonDown",colSwitch="16711680"]
+VisualizationTool< LoadInstrument Seg7[BoundX="40",BoundY="20",BoundH="180",BoundW="120",Port_PortKind="1",Port="PIM.PTB",colOn="13421822",colOff="255",colOutL="T1,0"]
+VisualizationTool< ResetVT Undo
+bckcolor 50331647
+font 'Courier New' 9 BLACK
+AUTOSIZE on
+ACTIVATE "Register" "Data:2" "Data:1" "Procedure" "Memory" "Assembly" "Source" "Terminal" "VisualizationTool"
