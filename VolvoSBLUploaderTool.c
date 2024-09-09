@@ -1468,13 +1468,13 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
           }
       else if (MenuSelected == 10)
             {
-              // Erase and program flash
+              // Erase and program EEPROM
               int choice = WarningAnswer();
               if (choice == 9) continue;
               
               // Ask for deriative file to use
               char filename[25];
-              printf("Enter the local device filename to use : ");
+              printf("Enter the local DEVICE filename to use (ex:9S12XDT384.cfg): ");
               scanf("%s", filename);
               printf("File is : %s\r\n",filename);
               
@@ -1511,12 +1511,12 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                     ReadChipProfile(filename);
                     unsigned long int totalsize = ChipConfig.eeprom_totalSize;
                     
-                    printf("Device Flash size : %ld Ko\r\n", (totalsize/1024));
-                    printf("Flash file loaded : %ld Ko\r\n", (sz/1024));
+                    printf("Device EEPROM size : %ld Ko\r\n", (totalsize/1024));
+                    printf("EEPROM file loaded : %ld Ko\r\n", (sz/1024));
                     
                     if (sz != totalsize)
                       {
-                        printf("Flash file loaded as not the required size for the device\r\n");
+                        printf("EEPROM file loaded doesn't have the required size for the device\r\n");
                         continue;
                       }
                     
@@ -1524,7 +1524,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                     for (int k=1;k<=ChipConfig.eeprom_itemCount;k++)
                       {
                         // Update ChipConfig with current item k
-                        SelectChipFlashProfile(filename, k);
+                        SelectChipEEPROMProfile(filename, k);
                          for (int i=0; i<ChipConfig.current_eepromItem.ppage_quantity;i++)
                           {
                             // Get number of sectors to erase for the page
@@ -1545,6 +1545,11 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                                 if (eraseres != 0) 
                                   {
                                     printf("\r\n%02X Error while erasing the device at address %06lX, the device is in unstable state, you still have hand on it while SBL is running.\r\n",eraseres,addrstart+(i*0x400));
+                                    if (retcode == 2) printf("EEPROM array of destination is not empty, it must be erased first.\r\n");
+                                    if (retcode == 1) printf("EEPROM address of destination is not Even.\r\n");
+                                    if (retcode == 6) printf("A command is already waiting to be done.\r\n");
+                                    if (retcode == 3) printf("PVIOL bit is set.\r\n");
+                                    if (retcode == 4) printf("ACCESS bit is set.\r\n");
                                     break;
                                   }
                               }
