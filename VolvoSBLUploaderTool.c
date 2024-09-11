@@ -45,6 +45,8 @@ struct tsDictionnaryItem
     int osc_speed;
     int useChecksumFrame;
     char* sbl_filename;
+    int partid;
+    char* deriative;
 };
 
 tDictionnaryItem DictionnaryItem;
@@ -237,7 +239,7 @@ struct can_frame TransmitAndReceive(int ExpectedCmd, int ECU_id, int s, struct s
   frame.can_id = CAN_DIAG_ID;
   frame.can_id |= CAN_EFF_FLAG;
 	frame.can_dlc = 8;
-  //memcpy(frame.data,&frames[6],8);
+
   frame.data[0] = ECU_id; 
   sendframe (s, frame);
   
@@ -260,9 +262,6 @@ void SelectChipFlashProfile(char *ProfileName, int index)
   json_t * jsIn;
   json_error_t error;
   
-  //int length = snprintf( NULL, 0, "%d", index );
-  //char* indexchr = malloc( length + 1 );
-  //snprintf( indexchr, length + 1, "%d", index );
   char indexchr[10];
   sprintf(indexchr, "%d", index);
   
@@ -288,17 +287,8 @@ void SelectChipFlashProfile(char *ProfileName, int index)
   
   printf("- Page start : 0x%02X\r\n - Page start addr : %04X\r\n- Page size : 0x%04X\r\n - Page quantity : %d\r\n",ChipConfig.current_flashItem.ppage_start, ChipConfig.current_flashItem.addrStart, ChipConfig.current_flashItem.ppage_size, ChipConfig.current_flashItem.ppage_quantity);
   
-  /*
-  json_decref(flash_addrStart);
-  json_decref(flash_pqtt);
-  json_decref(flash_psize);
-  json_decref(flash_pstart);
-  //json_decref(flash_item);
-  json_decref(flash_count);
-  //json_decref(flash_config);
-  */
+
   json_decref(jsIn);
-  //free(indexchr);
 }
 
 void SelectChipEEPROMProfile(char *ProfileName, int index)
@@ -332,15 +322,7 @@ void SelectChipEEPROMProfile(char *ProfileName, int index)
   
   printf("- Page start : 0x%02X\r\n - Page start addr : %04X\r\n- Page size : 0x%04X\r\n - Page quantity : %d\r\n",ChipConfig.current_eepromItem.ppage_start, ChipConfig.current_eepromItem.addrStart, ChipConfig.current_eepromItem.ppage_size, ChipConfig.current_eepromItem.ppage_quantity);
   
-  /*
-  json_decref(eeprom_addrStart);
-  json_decref(eeprom_pqtt);
-  json_decref(eeprom_psize);
-  json_decref(eeprom_pstart);
-  json_decref(eeprom_item);
-  json_decref(eeprom_count);
-  json_decref(eeprom_config);
-  */
+
   json_decref(jsIn);
   free(indexchr);
 }
@@ -351,7 +333,6 @@ void SelectChipEEPROMProfile(char *ProfileName, int index)
 */
 void ReadChipProfile(char *ProfileName)
 {
-  //
   json_t * jsIn;
   json_error_t error;
   
@@ -375,14 +356,6 @@ void ReadChipProfile(char *ProfileName)
   SelectChipEEPROMProfile(ProfileName, 1);
   printf("Device %s Config : \r\n - Page start : 0x%02X\r\n - Page size : 0x%04X\r\n - Page quantity : %d\r\n",json_string_value(device), ChipConfig.current_flashItem.ppage_start, ChipConfig.current_flashItem.ppage_size, ChipConfig.current_flashItem.ppage_quantity);
   
-  /*
-  json_decref(flash_totsize);
-  json_decref(flash_count);
-  json_decref(flash_config);
-  json_decref(eep_totsize);
-  json_decref(eep_count);
-  json_decref(eeprom_config);
-  */
   json_decref(jsIn);
 }
 
@@ -393,15 +366,13 @@ void ReadChipProfile(char *ProfileName)
 */
 void GetSBLInfoFromHwNo(char *HardwareModel, int ECU_id)
 {
-  //
   json_t * jsIn;
   json_error_t error;
   
   
   jsIn = json_load_file("Dictionnary.json", 'r', &error);
   json_t *items = json_object_get(jsIn, "profiles");
-  //json_t *item_count = json_object_get(jsIn, "count");
-  //int count = json_integer_value(item_count);
+
   size_t index;
   json_t *value;
   json_array_foreach(items, index, value) 
@@ -420,6 +391,8 @@ void GetSBLInfoFromHwNo(char *HardwareModel, int ECU_id)
           json_t *osc_speed       = json_object_get(value, "osc_speed");
           json_t *sbl_filename    = json_object_get(value, "sbl_filename");
           json_t *useChecksumF    = json_object_get(value, "useChecksumFrame");
+          json_t *partid          = json_object_get(value, "partid");
+          json_t *deriative       = json_object_get(value, "deriative");
           
           int len = strlen(json_string_value(sbl_filename));
           DictionnaryItem.sbl_filename  = malloc( len + 1 );
@@ -430,19 +403,16 @@ void GetSBLInfoFromHwNo(char *HardwareModel, int ECU_id)
           DictionnaryItem.osc_speed         = json_integer_value(osc_speed);
           DictionnaryItem.useChecksumFrame  = json_integer_value(useChecksumF);
           
-  /*
-          json_decref(useChecksumF);
-          json_decref(ecu_id);
-          json_decref(startAddr);
-          json_decref(osc_speed);
-          json_decref(sbl_filename);
-          json_decref(js_hw_no);
-  */
+          DictionnaryItem.partid            = strtol(json_string_value(partid),NULL,16);
+          len = strlen(json_string_value(deriative));
+          DictionnaryItem.deriative  = malloc( len + 1 );
+          memcpy(DictionnaryItem.deriative, json_string_value(deriative),len+1);
+          
+          
+          json_decref(jsIn);
+          return;
         }
-    //    json_decref(value);
     }
-
-  //json_decref(items);
   json_decref(jsIn);
   return;
 }
@@ -980,14 +950,14 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
       printf("\r\n====== SBL Menu ======\r\n");
       printf("1  - Dump Flash by Program Page and address to a file\r\n");
       printf("2  - Dump EEPROM by EEPROM Page and address to a file\r\n");
-      printf("3  - Dump all the Flash to a file\r\n");
-      printf("4  - Dump all the EEPROM to a file\r\n");
+      printf("3  - Dump ALL the Flash to a file\r\n");
+      printf("4  - Dump ALL the EEPROM to a file\r\n");
       printf("5  - Erase and Program Flash Page from file\r\n");
       printf("6  - Erase Flash sectors\r\n");
       printf("7  - Erase and Program EEPROM Page from file\r\n");
       printf("8  - Erase and Program EEPROM Words to Page\r\n");
       printf("9  - Erase and Program FULL FLASH from file\r\n");
-      printf("10 - Erase and Program Full EEPROM from file\r\n");
+      printf("10 - Erase and Program FULL EEPROM from file\r\n");
       printf("11 - Read register\r\n");
       printf("12 - Write register\r\n");
       printf("19 - Exit SBL Menu\r\n");
@@ -1031,15 +1001,19 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
         }
         if (MenuSelected == 3)
           {
+            /*
             // Load config file for the device
             char filename[25];
             printf("Enter the local device filename to use : ");
             scanf("%s", filename);
             printf("File is : %s\r\n",filename);
-            if (access(filename, F_OK) == 0) 
+            */
+            printf("Using deriative file %s\r\n",DictionnaryItem.deriative);
+            
+            if (access(DictionnaryItem.deriative, F_OK) == 0) 
               {
                   // file exists
-                  ReadChipProfile(filename);
+                  ReadChipProfile(DictionnaryItem.deriative);
                   unsigned long int totalsize = ChipConfig.flash_totalSize;
                   
                   printf("total size : %ld Ko\r\n", (totalsize/1024));
@@ -1049,7 +1023,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                   for (int k=1;k<=ChipConfig.flash_itemCount;k++)
                     {
                       // Update ChipConfig with current item k
-                      SelectChipFlashProfile(filename, k);
+                      SelectChipFlashProfile(DictionnaryItem.deriative, k);
                        for (int i=0; i<ChipConfig.current_flashItem.ppage_quantity;i++)
                         {
                           // Pour chaque page
@@ -1084,15 +1058,19 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
           }
         if (MenuSelected == 4)
           {
+            /*
             // Load config file for the device
             char filename[25];
             printf("Enter the local device filename to use : ");
             scanf("%s", filename);
             printf("File is : %s\r\n",filename);
-            if (access(filename, F_OK) == 0) 
+            */
+            printf("Using deriative file %s\r\n",DictionnaryItem.deriative);
+            
+            if (access(DictionnaryItem.deriative, F_OK) == 0) 
               {
                   // file exists
-                  ReadChipProfile(filename);
+                  ReadChipProfile(DictionnaryItem.deriative);
                   unsigned long int totalsize = ChipConfig.eeprom_totalSize;
                   
                   printf("total size : %ld Ko\r\n", (totalsize/1024));
@@ -1102,7 +1080,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                   for (int k=1;k<=ChipConfig.eeprom_itemCount;k++)
                     {
                       // Update ChipConfig with current item k
-                      SelectChipEEPROMProfile(filename, k);
+                      SelectChipEEPROMProfile(DictionnaryItem.deriative, k);
                        for (int i=0; i<ChipConfig.current_eepromItem.ppage_quantity;i++)
                         {
                           // Pour chaque page
@@ -1137,7 +1115,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
           }
           else if (MenuSelected == 5)
             {
-              // Erase and program flash
+              // Erase and program flash page frome file
               int choice = WarningAnswer();
               if (choice == 9) continue;
               printf("Enter the adresse from the sector to be erased, sector size is 0x400 bytes (ex : E08000) :");
@@ -1148,7 +1126,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
               
               
               char filename[25];
-              printf("Enter the local flash filename to use : ");
+              printf("Enter the local FLASH filename to use : ");
               scanf("%s", filename);
               printf("File is : %s\r\n",filename);
               if (access(filename, F_OK) == 0) 
@@ -1236,7 +1214,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
               
               
               char filename[25];
-              printf("Enter the local flash filename to use : ");
+              printf("Enter the local EEPROM filename to use : ");
               scanf("%s", filename);
               printf("File is : %s\r\n",filename);
               if (access(filename, F_OK) == 0) 
@@ -1339,15 +1317,18 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
           
           else if (MenuSelected == 9)
             {
-              // Erase and program flash
+              // Erase and program FULL flash
               int choice = WarningAnswer();
               if (choice == 9) continue;
               
+              /*
               // Ask for deriative file to use
               char filename[25];
               printf("Enter the local device filename to use : ");
               scanf("%s", filename);
               printf("File is : %s\r\n",filename);
+              */
+              printf("Deriative file is : %s\r\n",DictionnaryItem.deriative);
               
               // Ask for flash binary file to write
               char flashfilename[25];
@@ -1376,10 +1357,10 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
               // Check deriative file name and then ...
               char retcode = 0;
               int eraseres=0;
-              if (access(filename, F_OK) == 0) 
+              if (access(DictionnaryItem.deriative, F_OK) == 0) 
                 {
                     // file exists
-                    ReadChipProfile(filename);
+                    ReadChipProfile(DictionnaryItem.deriative);
                     unsigned long int totalsize = ChipConfig.flash_totalSize;
                     
                     printf("Device Flash size : %ld Ko\r\n", (totalsize/1024));
@@ -1395,7 +1376,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                     for (int k=1;k<=ChipConfig.flash_itemCount;k++)
                       {
                         // Update ChipConfig with current item k
-                        SelectChipFlashProfile(filename, k);
+                        SelectChipFlashProfile(DictionnaryItem.deriative, k);
                          for (int i=0; i<ChipConfig.current_flashItem.ppage_quantity;i++)
                           {
                             // Get number of sectors to erase for the page
@@ -1437,7 +1418,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                                 int word = (d1<<8)|d0;
                                 
                                 retcode = ProgramMemoryWord (ECU_id, 0, addrstart, word, s, addr, frame);
-                                printf(" Flashing file %s [%04lX/%04lX:%04X] %02X\r",filename, addrstart,addrfinal,word,retcode);
+                                printf(" Flashing file %s [%04lX/%04lX:%04X] %02X\r",DictionnaryItem.deriative, addrstart,addrfinal,word,retcode);
                                 if (retcode != 0) 
                                   {
                                     printf("\r\n Flash failed !!! \r\n");
@@ -1468,15 +1449,18 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
           }
       else if (MenuSelected == 10)
             {
-              // Erase and program EEPROM
+              // Erase and program FULL EEPROM
               int choice = WarningAnswer();
               if (choice == 9) continue;
               
+              /*
               // Ask for deriative file to use
               char filename[25];
               printf("Enter the local DEVICE filename to use (ex:9S12XDT384.cfg): ");
               scanf("%s", filename);
               printf("File is : %s\r\n",filename);
+              */
+              printf("Deriative file is : %s\r\n",DictionnaryItem.deriative);
               
               // Ask for flash binary file to write
               char flashfilename[25];
@@ -1505,10 +1489,10 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
               // Check deriative file name and then ...
               char retcode = 0;
               int eraseres=0;
-              if (access(filename, F_OK) == 0) 
+              if (access(DictionnaryItem.deriative, F_OK) == 0) 
                 {
                     // file exists
-                    ReadChipProfile(filename);
+                    ReadChipProfile(DictionnaryItem.deriative);
                     unsigned long int totalsize = ChipConfig.eeprom_totalSize;
                     
                     printf("Device EEPROM size : %ld Ko\r\n", (totalsize/1024));
@@ -1524,7 +1508,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                     for (int k=1;k<=ChipConfig.eeprom_itemCount;k++)
                       {
                         // Update ChipConfig with current item k
-                        SelectChipEEPROMProfile(filename, k);
+                        SelectChipEEPROMProfile(DictionnaryItem.deriative, k);
                          for (int i=0; i<ChipConfig.current_eepromItem.ppage_quantity;i++)
                           {
                             // Get number of sectors to erase for the page
@@ -1564,7 +1548,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                                 int word = (d1<<8)|d0;
                                 
                                 retcode = ProgramMemoryWord (ECU_id, 1, addrstart, word, s, addr, frame);
-                                printf(" Writing EEPROM file %s [%04lX/%04lX:%04X] %02X\r",filename, addrstart,addrfinal,word,retcode);
+                                printf(" Writing EEPROM file %s [%04lX/%04lX:%04X] %02X\r",DictionnaryItem.deriative, addrstart,addrfinal-1,word,retcode);
                                 if (retcode != 0) 
                                   {
                                     printf("\r\n Write failed !!! \r\n");
@@ -1578,7 +1562,7 @@ int SBLMenu (int ECU_id, int s, struct sockaddr *addr, struct can_frame frame)
                                 addrstart = addrstart+2;
                               }
                             
-                            printf("\r\n%02i - Written %06lX, of len %04X\r\n", pagenumber, addrstart, len);
+                            printf("\r\n%02i - Written %06lX, of len %04X\r\n", pagenumber, addrstart-1, len);
                             
                             pagenumber++;
                           }
@@ -1776,13 +1760,13 @@ int main(int argc, char **argv)
               int data = (int)strtol(hex, NULL, 16);
               PIN[i]=data;
               j=j+2;
-              printf("%02X \r\n",PIN[i]);
+              if (debug) printf("%02X \r\n",PIN[i]);
             }
           char res = UnlockECU (PIN, ECU_id, s, (struct sockaddr *)&addr, frame);
           if (res == 0) 
             printf("Success\r\n");
           else
-            printf("Failt to unlock\r\n");
+            printf("Fail to unlock\r\n");
         } 
           
       if (MenuSelected == 5)
@@ -1796,7 +1780,7 @@ int main(int argc, char **argv)
           sendframe (shs, frame);
           sendframe (sls, frame);
           
-          break;
+          //break;
         }
       
       if (MenuSelected == 6)
@@ -1838,10 +1822,20 @@ int main(int argc, char **argv)
         {
           // Device Infos
           char deviceNo[13];
+          printf("\r\n");
           if (GetDeviceInfo (ECU_id, s, (struct sockaddr *)&addr, frame,   deviceNo) == 1)
             {
               printf("Device is : %s",deviceNo);
+              GetSBLInfoFromHwNo(deviceNo, ECU_id);
+              printf("Found SBL File to use : %s\r\n", DictionnaryItem.sbl_filename);
+              printf("Start address : %04X\r\n", DictionnaryItem.startAddr);
+              printf("ECU Id : %02X\r\n", DictionnaryItem.ecu_id);
+              printf("Oscillator speed : %d KHz\r\n", DictionnaryItem.osc_speed);
+              printf("Expected partid : 0x%04X, deriative file %s \r\n\r\n", DictionnaryItem.partid, DictionnaryItem.deriative);
+              
             }
+          else
+            printf("No informations found about this ECU\r\n\r\n");
         }
         
       if (MenuSelected == 2)
@@ -1857,6 +1851,7 @@ int main(int argc, char **argv)
               printf("Start address : %04X\r\n", DictionnaryItem.startAddr);
               printf("ECU Id : %02X\r\n", DictionnaryItem.ecu_id);
               printf("Oscillator speed : %d KHz\r\n", DictionnaryItem.osc_speed);
+              printf("Expected partid : 0x%04X, deriative file %s \r\n\r\n", DictionnaryItem.partid, DictionnaryItem.deriative);
               RunAddress = DictionnaryItem.startAddr;
               useCheckSum = DictionnaryItem.useChecksumFrame;
             }
